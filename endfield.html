@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PORTFOLIO // ENDFIELD</title>
+<style>
+  /* ============================================
+     ENDFIELD STYLE — CONTOUR / INDUSTRIAL
+     ============================================ */
+
+  :root {
+    --bg:       #0b0d0f;
+    --surface:  #111518;
+    --elevated: #181c20;
+    --border:   rgba(255,255,255,0.08);
+    --line:     rgba(255,255,255,0.10);
+    --text:     #e8e6e0;
+    --text-dim: #8c8a84;
+    --text-muted: #5c5a55;
+    --orange:   #e88a3e;
+    --amber:    #d4a24e;
+    --warn:     #c74e2a;
+    --cyan:     #6b9e9a;
+    --orange-glow: 0 0 18px rgba(232,138,62,0.2);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- CONTOUR CANVAS ---- */
+  #contourCanvas {
+    position: fixed; inset: 0; z-index: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+
+  /* ---- LAYOUT ---- */
+  .container {
+    position: relative; z-index: 1;
+    max-width: 1000px; margin: 0 auto; padding: 0 32px 80px;
+  }
+
+  /* ---- NAVIGATION ---- */
+  .nav-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 36px;
+    background: rgba(11,13,15,0.88);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(232,138,62,0.12);
+    font-size: 0.72rem; letter-spacing: 3px;
+  }
+  .nav-brand {
+    display: flex; align-items: center; gap: 10px;
+    color: var(--orange); font-weight: 600;
+    letter-spacing: 4px;
+  }
+  .nav-brand .hex {
+    width: 18px; height: 18px;
+    border: 1px solid var(--orange);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: rgba(232,138,62,0.15);
+  }
+  .nav-links { display: flex; gap: 32px; }
+  .nav-links a {
+    color: var(--text-dim); text-decoration: none;
+    transition: color 0.25s; position: relative; padding: 4px 0;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+    background: var(--orange);
+    transform: scaleX(0); transition: transform 0.25s ease;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--orange); }
+  .nav-links a:hover::after, .nav-links a.active::after { transform: scaleX(1); }
+
+  /* ---- DECORATIVE CORNER LINES ---- */
+  .corner-decor {
+    position: fixed; z-index: 0; pointer-events: none;
+    opacity: 0.25;
+  }
+  .corner-tl { top: 60px; left: 20px; }
+  .corner-br { bottom: 20px; right: 20px; }
+  .corner-decor svg { width: 60px; height: 60px; }
+  .corner-decor line { stroke: var(--orange); stroke-width: 1; }
+
+  /* ---- HERO ---- */
+  .hero {
+    padding: 140px 0 50px; position: relative;
+  }
+  .hero-eyebrow {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 24px;
+  }
+  .hero-eyebrow .notch {
+    width: 24px; height: 1px; background: var(--orange);
+  }
+  .hero-eyebrow span {
+    font-size: 0.68rem; letter-spacing: 6px; color: var(--orange);
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-size: clamp(2.6rem, 6vw, 4.2rem);
+    font-weight: 200; letter-spacing: 10px;
+    line-height: 1.1;
+  }
+  .hero h1 .accent { color: var(--orange); }
+  .hero-sub {
+    margin-top: 18px; color: var(--text-dim);
+    font-size: 0.85rem; letter-spacing: 2px; font-weight: 300;
+  }
+  .hero-sub .typing-cursor {
+    display: inline-block; width: 8px; height: 1em;
+    background: var(--orange); animation: blink 1s step-end infinite;
+    vertical-align: text-bottom;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ---- STATUS STRIP ---- */
+  .status-strip {
+    display: flex; flex-wrap: wrap; gap: 0;
+    margin-top: 40px;
+    border: 1px solid var(--border);
+  }
+  .status-cell {
+    flex: 1; min-width: 120px;
+    padding: 14px 20px;
+    border-right: 1px solid var(--border);
+    font-size: 0.62rem; letter-spacing: 2px;
+  }
+  .status-cell:last-child { border-right: none; }
+  .status-cell .label { color: var(--text-muted); margin-bottom: 4px; }
+  .status-cell .value { color: var(--text); font-size: 0.75rem; }
+  .status-cell .value.online { color: var(--orange); }
+  .status-dot {
+    display: inline-block; width: 5px; height: 5px;
+    border-radius: 50%; background: var(--orange);
+    margin-right: 6px; vertical-align: middle;
+  }
+
+  /* ---- SECTION HEADERS ---- */
+  .section-header {
+    display: flex; align-items: center; gap: 16px;
+    margin: 80px 0 36px;
+  }
+  .section-header .index {
+    font-size: 0.65rem; color: var(--orange); letter-spacing: 2px;
+  }
+  .section-header h2 {
+    font-size: 0.8rem; font-weight: 500; letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+  .section-header .line { flex: 1; height: 1px; background: var(--line); }
+
+  /* ---- ABOUT ---- */
+  .about-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  }
+  .about-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px;
+    position: relative; overflow: hidden;
+  }
+  .about-card::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 40px;
+    background: var(--orange);
+    opacity: 0.6;
+  }
+  .about-card .card-title {
+    font-size: 0.7rem; letter-spacing: 3px; color: var(--orange);
+    text-transform: uppercase; margin-bottom: 14px;
+    padding-left: 12px;
+  }
+  .about-card p {
+    font-size: 0.78rem; line-height: 1.8; color: var(--text-dim);
+  }
+  .about-card .data-row {
+    display: flex; padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.75rem;
+  }
+  .data-row .dl { color: var(--text-muted); width: 80px; flex-shrink: 0; letter-spacing: 1px; }
+  .data-row .dv { color: var(--text); }
+
+  /* ---- SKILLS ---- */
+  .skills-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+  }
+  .skill-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px 16px; text-align: center;
+    transition: border-color 0.3s;
+    position: relative;
+  }
+  .skill-card:hover { border-color: rgba(232,138,62,0.3); }
+  .skill-card .skill-hex {
+    width: 36px; height: 36px; margin: 0 auto 14px;
+    border: 1px solid var(--orange);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: rgba(232,138,62,0.08);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; color: var(--orange);
+  }
+  .skill-name {
+    color: var(--text); font-size: 0.72rem;
+    letter-spacing: 3px; margin-bottom: 6px;
+  }
+  .skill-desc { font-size: 0.62rem; color: var(--text-muted); letter-spacing: 1px; line-height: 1.5; }
+
+  /* ---- PROJECTS ---- */
+  .projects-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+  }
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px 24px;
+    transition: border-color 0.3s, background 0.3s;
+    position: relative;
+  }
+  .project-card:hover {
+    border-color: rgba(232,138,62,0.3);
+    background: var(--elevated);
+  }
+  .project-card .pc-num {
+    position: absolute; top: 16px; right: 20px;
+    font-size: 0.65rem; color: var(--text-muted); letter-spacing: 1px;
+  }
+  .project-card .pc-tag {
+    display: inline-block; font-size: 0.6rem; letter-spacing: 3px;
+    color: var(--orange); margin-bottom: 16px;
+    padding-left: 10px; border-left: 2px solid var(--orange);
+  }
+  .project-card h3 {
+    font-size: 0.9rem; font-weight: 500; letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+  .project-card p {
+    font-size: 0.7rem; line-height: 1.8; color: var(--text-dim); margin-bottom: 18px;
+  }
+  .project-card .pc-techs { display: flex; flex-wrap: wrap; gap: 10px; }
+  .project-card .pc-techs span {
+    font-size: 0.6rem; color: var(--text-muted); letter-spacing: 1px;
+    padding: 3px 8px; border: 1px solid var(--border);
+    transition: border-color 0.3s;
+  }
+  .project-card:hover .pc-techs span { border-color: rgba(232,138,62,0.15); }
+
+  /* ---- CONTACT ---- */
+  .contact-section {
+    margin-top: 80px; padding: 48px 32px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    text-align: center;
+    position: relative;
+  }
+  .contact-section::before {
+    content: 'ESTABLISH LINK';
+    position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+    background: var(--bg); padding: 0 20px;
+    font-size: 0.6rem; letter-spacing: 5px; color: var(--text-muted);
+  }
+  .contact-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; margin-top: 24px; }
+  .contact-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 28px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.7rem; letter-spacing: 3px;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .contact-btn::after {
+    content: ''; position: absolute; bottom: 4px; left: 8px; right: 8px; height: 1px;
+    background: var(--orange); transform: scaleX(0);
+    transition: transform 0.3s;
+  }
+  .contact-btn:hover {
+    border-color: var(--orange); color: var(--orange);
+    box-shadow: var(--orange-glow);
+  }
+  .contact-btn:hover::after { transform: scaleX(1); }
+
+  /* ---- EMAIL POPUP ---- */
+  .email-btn-wrapper { position: relative; display: inline-block; }
+  .email-popup {
+    position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%);
+    background: var(--elevated); border: 1px solid var(--orange);
+    padding: 14px 20px; white-space: nowrap;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.25s, visibility 0.25s; z-index: 50;
+  }
+  .email-popup::after {
+    content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 7px solid transparent; border-top-color: var(--orange);
+  }
+  .email-btn-wrapper:hover .email-popup { opacity: 1; visibility: visible; }
+  .email-popup .email-address { color: var(--orange); font-size: 0.82rem; letter-spacing: 1px; }
+  .email-popup .email-hint {
+    color: var(--text-muted); font-size: 0.6rem; margin-top: 4px; letter-spacing: 2px;
+  }
+
+  /* ---- FOOTER ---- */
+  .footer {
+    text-align: center; padding: 50px 0 40px;
+    font-size: 0.6rem; color: var(--text-muted); letter-spacing: 3px;
+  }
+  .footer .sep { color: var(--orange); margin: 0 8px; }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 768px) {
+    .about-grid { grid-template-columns: 1fr; }
+    .skills-grid { grid-template-columns: repeat(2, 1fr); }
+    .projects-grid { grid-template-columns: 1fr; }
+    .hero { padding-top: 110px; }
+    .nav-bar { padding: 12px 20px; }
+    .nav-links { gap: 16px; font-size: 0.65rem; letter-spacing: 2px; }
+    .status-strip { flex-direction: column; }
+    .status-cell { border-right: none; border-bottom: 1px solid var(--border); }
+  }
+  @media (max-width: 480px) {
+    .skills-grid { grid-template-columns: 1fr; }
+    .container { padding: 0 20px 60px; }
+    .hero h1 { font-size: 2rem; letter-spacing: 5px; }
+    .corner-decor { display: none; }
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--text-muted); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--orange); }
+</style>
+</head>
+<body>
+
+<!-- Contour Canvas -->
+<canvas id="contourCanvas"></canvas>
+
+<!-- Corner Decorations -->
+<div class="corner-decor corner-tl">
+  <svg viewBox="0 0 60 60"><line x1="0" y1="0" x2="20" y2="0"/><line x1="0" y1="0" x2="0" y2="20"/></svg>
+</div>
+<div class="corner-decor corner-br">
+  <svg viewBox="0 0 60 60"><line x1="60" y1="60" x2="40" y2="60"/><line x1="60" y1="60" x2="60" y2="40"/></svg>
+</div>
+
+<!-- Navigation -->
+<nav class="nav-bar" id="navBar">
+  <div class="nav-brand">
+    <div class="hex"></div>
+    ENDFIELD
+  </div>
+  <div class="nav-links">
+    <a href="#hero" class="active">HOME</a>
+    <a href="#about">ABOUT</a>
+    <a href="#skills">SKILLS</a>
+    <a href="#projects">PROJECTS</a>
+    <a href="#contact">CONTACT</a>
+  </div>
+</nav>
+
+<!-- Container -->
+<div class="container">
+
+  <!-- HERO -->
+  <span id="hero"></span>
+  <header class="hero">
+    <div class="hero-eyebrow">
+      <span class="notch"></span>
+      <span>TERMINAL v2.1 // SIGNAL ACTIVE</span>
+    </div>
+    <h1>PORT<span class="accent">FOLIO</span></h1>
+    <p class="hero-sub">
+      &gt; <span id="typedText"></span><span class="typing-cursor"></span>
+    </p>
+
+    <div class="status-strip">
+      <div class="status-cell">
+        <div class="label">STATUS</div>
+        <div class="value online"><span class="status-dot"></span>ONLINE</div>
+      </div>
+      <div class="status-cell">
+        <div class="label">NODE</div>
+        <div class="value">EF-PORT-01</div>
+      </div>
+      <div class="status-cell">
+        <div class="label">UPTIME</div>
+        <div class="value" id="uptime">00:00:00</div>
+      </div>
+      <div class="status-cell">
+        <div class="label">COORDINATES</div>
+        <div class="value">EARTH ORBIT</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ABOUT -->
+  <div class="section-header" id="about">
+    <span class="index">01</span>
+    <h2>About Me</h2>
+    <span class="line"></span>
+  </div>
+
+  <div class="about-grid">
+    <div class="about-card">
+      <div class="card-title">// IDENTITY</div>
+      <div class="data-row"><span class="dl">NAME</span><span class="dv">徐念齐</span></div>
+      <div class="data-row"><span class="dl">ROLE</span><span class="dv" style="color:var(--orange)">全栈开发者 / 设计师</span></div>
+      <div class="data-row"><span class="dl">LOCATION</span><span class="dv">地球 · 东八区</span></div>
+      <div class="data-row"><span class="dl">MISSION</span><span class="dv">构建数字与代码的世界</span></div>
+    </div>
+
+    <div class="about-card">
+      <div class="card-title">// MANIFEST</div>
+      <p>
+        热衷于将复杂的创意转化为简洁的交互体验。<br>
+        相信代码不仅是工具，更是一种表达。<br>
+        痴迷于工业设计美学与系统架构的艺术。<br>
+        在终端里，用键盘构建整个星系。<br>
+        欢迎接入我的信号节点。
+      </p>
+    </div>
+  </div>
+
+  <!-- SKILLS -->
+  <div class="section-header" id="skills">
+    <span class="index">02</span>
+    <h2>Tech Stack</h2>
+    <span class="line"></span>
+  </div>
+
+  <div class="skills-grid">
+    <div class="skill-card">
+      <div class="skill-hex">&#x25C9;</div>
+      <div class="skill-name">FRONTEND</div>
+      <div class="skill-desc">React / Vue / Three.js</div>
+    </div>
+    <div class="skill-card">
+      <div class="skill-hex">&#x25C8;</div>
+      <div class="skill-name">BACKEND</div>
+      <div class="skill-desc">Node.js / Python / Go</div>
+    </div>
+    <div class="skill-card">
+      <div class="skill-hex">&#x25C6;</div>
+      <div class="skill-name">DATABASE</div>
+      <div class="skill-desc">PostgreSQL / MongoDB</div>
+    </div>
+    <div class="skill-card">
+      <div class="skill-hex">&#x25B2;</div>
+      <div class="skill-name">DESIGN</div>
+      <div class="skill-desc">Figma / Blender / PS</div>
+    </div>
+  </div>
+
+  <!-- PROJECTS -->
+  <div class="section-header" id="projects">
+    <span class="index">03</span>
+    <h2>Projects</h2>
+    <span class="line"></span>
+  </div>
+
+  <div class="projects-grid">
+    <div class="project-card">
+      <span class="pc-num">PRJ-01</span>
+      <span class="pc-tag">WEB APP</span>
+      <h3>NEBULA DASHBOARD</h3>
+      <p>一个以星云为主题的数据可视化仪表盘，支持实时数据流渲染与自定义图表组件。</p>
+      <div class="pc-techs"><span>React</span><span>D3.js</span><span>WebSocket</span><span>Canvas</span></div>
+    </div>
+
+    <div class="project-card">
+      <span class="pc-num">PRJ-02</span>
+      <span class="pc-tag">MOBILE</span>
+      <h3>PIXEL_TRACE</h3>
+      <p>基于 AR 技术的像素艺术创作工具，可将现实场景转化为复古像素风格画作。</p>
+      <div class="pc-techs"><span>ARKit</span><span>Metal</span><span>SwiftUI</span><span>CoreML</span></div>
+    </div>
+
+    <div class="project-card">
+      <span class="pc-num">PRJ-03</span>
+      <span class="pc-tag">AI / ML</span>
+      <h3>SYNTHWAVE.GEN</h3>
+      <p>使用生成式 AI 模型创作 Synthwave 音乐，支持风格迁移与实时交互式音乐生成。</p>
+      <div class="pc-techs"><span>Python</span><span>PyTorch</span><span>FastAPI</span><span>WebAudio</span></div>
+    </div>
+
+    <div class="project-card">
+      <span class="pc-num">PRJ-04</span>
+      <span class="pc-tag">CLI TOOL</span>
+      <h3>CYBER_DEPLOY</h3>
+      <p>一款终端风格的自动化部署工具，带有复古 CRT 界面和丰富的 CLI 交互。</p>
+      <div class="pc-techs"><span>Go</span><span>Bubble Tea</span><span>Docker</span><span>GitHub Actions</span></div>
+    </div>
+
+    <div class="project-card">
+      <span class="pc-num">PRJ-05</span>
+      <span class="pc-tag">GAME</span>
+      <h3>VECTOR_RUNNER</h3>
+      <p>一款向 80 年代街机致敬的浏览器矢量游戏，使用纯 CSS 和 Canvas 构建。</p>
+      <div class="pc-techs"><span>Canvas API</span><span>WebAudio</span><span>Gamepad API</span></div>
+    </div>
+
+    <div class="project-card">
+      <span class="pc-num">PRJ-06</span>
+      <span class="pc-tag">OSS</span>
+      <h3>GLITCH.KIT</h3>
+      <p>开源的前端组件库，提供一系列复古未来主义风格的 UI 组件与动效。</p>
+      <div class="pc-techs"><span>TypeScript</span><span>CSS Houdini</span><span>Storybook</span></div>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="contact-section" id="contact">
+    <h2 style="font-size:1.1rem;font-weight:300;letter-spacing:8px;text-transform:uppercase;">
+      Make Contact
+    </h2>
+    <p style="color:var(--text-dim);margin-top:8px;font-size:0.75rem;letter-spacing:1px;">
+      如果你想一起创造一些酷炫的东西，或者只是聊聊天，随时联系我。
+    </p>
+    <div class="contact-links">
+      <div class="email-btn-wrapper">
+        <span class="contact-btn" style="cursor:default;">
+          &#x2709; EMAIL
+        </span>
+        <div class="email-popup">
+          <div class="email-address">xumou173@gmail.com</div>
+          <div class="email-hint">[ CLICK TO COPY ]</div>
+        </div>
+      </div>
+      <a href="https://github.com" target="_blank" class="contact-btn">
+        &#x2328; GITHUB
+      </a>
+      <a href="#" class="contact-btn">
+        &#x1F4C4; RESUME
+      </a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <span>SIGNAL ACTIVE</span><span class="sep">//</span>
+    <span>NODE EF-PORT-01</span><span class="sep">//</span>
+    <span>&copy; 2026</span><span class="sep">//</span>
+    <span>ENDFIELD PROTOCOL</span>
+  </footer>
+
+</div>
+
+<script>
+  // =================== CONTOUR CANVAS ===================
+  (function contourBg() {
+    const canvas = document.getElementById('contourCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    let w, h, dpr;
+    let pointerX = 0, pointerY = 0;
+    let time = 0;
+
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    // Simplex-like noise approximation for contour lines
+    function noise2D(x, y) {
+      const n = Math.sin(x * 1.27 + y * 0.73) * Math.cos(x * 0.61 - y * 1.19)
+              + Math.sin(x * 2.13 - y * 1.57) * Math.cos(x * 1.31 + y * 0.97)
+              + Math.sin(x * 0.43 + y * 2.01) * Math.cos(x * 1.81 - y * 0.53);
+      return n / 3;
+    }
+
+    function getElevation(x, y, t) {
+      const m = reducedMotion.matches ? 0.3 : 1;
+      const px = x / 180 + pointerX * 0.4;
+      const py = y / 180 + pointerY * 0.4;
+      return noise2D(px + t * 0.08 * m, py + t * 0.06 * m)
+           + noise2D(px * 2.3 - t * 0.04 * m, py * 2.3 + t * 0.05 * m) * 0.6
+           + noise2D(px * 0.5 + t * 0.03 * m, py * 0.5 - t * 0.02 * m) * 1.2;
+    }
+
+    function draw(t) {
+      time = t * 0.001;
+      ctx.clearRect(0, 0, w, h);
+
+      // Background
+      const bg = ctx.createRadialGradient(w * 0.6, h * 0.4, 0, w * 0.5, h * 0.5, Math.max(w, h) * 0.8);
+      bg.addColorStop(0, 'rgba(17,21,24,0.2)');
+      bg.addColorStop(0.5, 'rgba(11,13,15,0.5)');
+      bg.addColorStop(1, 'rgba(8,10,12,0.9)');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+
+      // Draw contour lines
+      const step = 18;
+      for (let y = 0; y < h + step; y += step) {
+        ctx.beginPath();
+        let started = false;
+        for (let x = 0; x < w + step; x += step * 0.6) {
+          const el = getElevation(x, y, time);
+          // Quantize elevation for contour bands
+          const q = Math.round(el * 5) / 5;
+          const offset = (q + 1) * 14;
+          const py = y + offset + Math.sin(x * 0.015 + q) * 8;
+
+          if (!started) { ctx.moveTo(x, py); started = true; }
+          else { ctx.lineTo(x, py); }
+        }
+        const alpha = 0.06 + Math.abs(getElevation(w * 0.3, y, time)) * 0.08;
+        ctx.strokeStyle = `rgba(232,138,62,${alpha})`;
+        ctx.lineWidth = 0.6;
+        ctx.stroke();
+      }
+
+      // Accent contour lines (less frequent, brighter)
+      for (let y = 0; y < h + step * 2; y += step * 3) {
+        ctx.beginPath();
+        let started = false;
+        for (let x = 0; x < w + step; x += step * 0.4) {
+          const el = getElevation(x, y, time);
+          const q = Math.round(el * 4) / 4;
+          const offset = (q + 1) * 18;
+          const py = y + offset + Math.cos(x * 0.012 + q) * 10;
+
+          if (!started) { ctx.moveTo(x, py); started = true; }
+          else { ctx.lineTo(x, py); }
+        }
+        const alpha = 0.04 + Math.abs(getElevation(w * 0.5, y, time)) * 0.12;
+        ctx.strokeStyle = `rgba(212,162,78,${alpha})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+
+      // Subtle hex grid overlay
+      const hexW = 80, hexH = hexW * 0.866;
+      ctx.strokeStyle = 'rgba(232,138,62,0.03)';
+      ctx.lineWidth = 0.4;
+      for (let row = -2; row < h / hexH + 3; row++) {
+        const offsetX = row % 2 === 0 ? 0 : hexW / 2;
+        for (let col = -2; col < w / hexW + 3; col++) {
+          const cx = col * hexW + offsetX;
+          const cy = row * hexH;
+          ctx.beginPath();
+          for (let i = 0; i < 6; i++) {
+            const angle = Math.PI / 3 * i - Math.PI / 6;
+            const vx = cx + (hexW / 2) * Math.cos(angle);
+            const vy = cy + (hexW / 2) * Math.sin(angle);
+            if (i === 0) ctx.moveTo(vx, vy);
+            else ctx.lineTo(vx, vy);
+          }
+          ctx.closePath();
+          ctx.stroke();
+        }
+      }
+
+      requestAnimationFrame(draw);
+    }
+
+    document.addEventListener('pointermove', e => {
+      pointerX = (e.clientX / w - 0.5) * 2;
+      pointerY = (e.clientY / h - 0.5) * 2;
+    });
+    document.addEventListener('pointerleave', () => {
+      pointerX = 0; pointerY = 0;
+    });
+
+    resize();
+    window.addEventListener('resize', resize);
+    requestAnimationFrame(draw);
+  })();
+
+  // =================== TYPING EFFECT ===================
+  (function typeText() {
+    const el = document.getElementById('typedText');
+    if (!el) return;
+    const phrases = ['全栈开发者','创意工程师','系统架构师','终端旅人'];
+    let pi = 0, ci = 0, del = false;
+    function tick() {
+      const cur = phrases[pi];
+      if (del) {
+        el.textContent = cur.substring(0, ci--);
+        if (ci < 0) { del = false; pi = (pi + 1) % phrases.length; ci = 0; setTimeout(tick, 300); return; }
+      } else {
+        el.textContent = cur.substring(0, ci++);
+        if (ci > cur.length) { setTimeout(() => { del = true; tick(); }, 2000); return; }
+      }
+      setTimeout(tick, del ? 40 : 90);
+    }
+    tick();
+  })();
+
+  // =================== UPTIME ===================
+  (function uptime() {
+    const el = document.getElementById('uptime');
+    if (!el) return;
+    const start = Date.now();
+    setInterval(() => {
+      const s = Math.floor((Date.now() - start) / 1000);
+      el.textContent = `${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+    }, 1000);
+  })();
+
+  // =================== NAV SCROLL-SPY ===================
+  (function navSpy() {
+    const links = document.querySelectorAll('.nav-links a');
+    const sections = [];
+    links.forEach(l => {
+      const id = l.getAttribute('href');
+      if (id) { const el = document.querySelector(id); if (el) sections.push({ el, link: l }); }
+    });
+    window.addEventListener('scroll', () => {
+      let cur = sections[0]?.link;
+      sections.forEach(({ el, link }) => { if (el.getBoundingClientRect().top <= 100) cur = link; });
+      links.forEach(l => l.classList.remove('active'));
+      if (cur) cur.classList.add('active');
+    });
+  })();
+
+  // =================== SMOOTH SCROLL ===================
+  document.querySelectorAll('.nav-links a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const t = document.querySelector(link.getAttribute('href'));
+      if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // =================== EMAIL COPY ===================
+  (function emailCopy() {
+    const popup = document.querySelector('.email-popup');
+    const hint = popup?.querySelector('.email-hint');
+    if (!popup || !hint) return;
+    popup.style.cursor = 'pointer';
+    popup.addEventListener('click', e => {
+      e.stopPropagation();
+      navigator.clipboard.writeText('xumou173@gmail.com').then(() => {
+        hint.textContent = '[ COPIED ✓ ]';
+        hint.style.color = '#e88a3e';
+        setTimeout(() => { hint.textContent = '[ CLICK TO COPY ]'; hint.style.color = ''; }, 1800);
+      }).catch(() => {});
+    });
+  })();
+</script>
+
+</body>
+</html>
